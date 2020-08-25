@@ -1,10 +1,10 @@
 use actix_web::{web, App, HttpServer, Responder, HttpRequest, HttpResponse, Error};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use futures::future::{ready, Ready};
 
 #[derive(Serialize)]
 struct User {
-    id: String,
+    user_id: u32
 }
 
 // Responder
@@ -22,8 +22,13 @@ impl Responder for User {
     }
 }
 
-async fn show_user(path: web::Path<u32>) -> User {
-	User { id: path.to_string() }
+#[derive(Deserialize)]
+struct UriParams {
+    user_id: u32
+}
+
+async fn get_user(path: web::Path<UriParams>) -> User {
+	User { user_id: path.user_id }
 }
 
 #[actix_rt::main]
@@ -36,7 +41,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
 			.service(
 				web::scope("/users")
-					.route("/{userid}", web::get().to(show_user)))
+					.route("/{user_id}", web::get().to(get_user)))
 	})
     .bind(ip_address)?
     .run()
