@@ -4,7 +4,7 @@ use futures::future::{ready, Ready};
 
 #[derive(Serialize)]
 struct User {
-    name: &'static str,
+    id: String,
 }
 
 // Responder
@@ -22,8 +22,8 @@ impl Responder for User {
     }
 }
 
-async fn show_user()  -> impl Responder {
-	User { name: "user" }
+async fn show_user(path: web::Path<u32>) -> User {
+	User { id: path.to_string() }
 }
 
 #[actix_rt::main]
@@ -36,7 +36,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
 			.service(
 				web::scope("/users")
-					.route("/show", web::get().to(show_user)))
+					.route("/{userid}", web::get().to(show_user)))
 	})
     .bind(ip_address)?
     .run()
